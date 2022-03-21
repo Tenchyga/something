@@ -4,6 +4,8 @@ from PyQt5.QtCore import Qt, QRect
 
 class Auth_Window():
     def __init__(self):
+        self.user = ''
+
         super().__init__()
 
         # Создание основого рабочего пространства
@@ -46,7 +48,8 @@ class Auth_Window():
         self.sign_in_button.move(180, 310)
         self.sign_in_button.show()
 
-        self.sign_in_button.clicked.connect(exit)
+        self.sign_in_button.clicked.connect(self.login_into_account)
+
 
         # Добавление надписи "еПроверка"
         self.title = QLabel(self.main_window)
@@ -102,9 +105,29 @@ class Auth_Window():
         self.login.show()
 
         self.password = QLineEdit(self.main_window)
+        self.password.setEchoMode(QLineEdit.Password)
         self.password.setPlaceholderText("Введите пароль")
         self.password.setFixedSize(421, 31)
         self.password.move(40, 240)
 
         self.password.setFont(QFont('Corbel Light', 14))
         self.password.show()
+
+    def login_into_account(self):
+        import sqlite3, os
+
+        is_exists = False
+
+        file_location = sqlite3.connect(os.getcwd() + '\database.db')
+        database = file_location.cursor()
+
+        for login, password in database.execute("SELECT login, password FROM users"):
+            if self.login.text() == login and self.password.text() == password:
+                print("Такая запись существует.")
+                is_exists = True
+
+                self.user = login
+                self.main_window.close()
+
+        if not(is_exists):
+            print("Указанной записи не существует.")
