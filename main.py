@@ -9,7 +9,6 @@ from modules.teacher_window import Teacher_Window
 from database_creator import create_dabase
 
 from os import getcwd, path
-import json
 
 def main():
 
@@ -21,15 +20,18 @@ def main():
     loginApp.exec_()
 
     file_location = sqlite3.connect(getcwd() + '\database.db')
-    database = file_location.cursor().execute(f"SELECT * FROM users WHERE login = ?", (auth_app.user, )).fetchone()
+    database = file_location.cursor()
 
-    if database[-1] == 'student':
+    user_ID = auth_app.user[0]
+    user_role = database.execute(f"SELECT role FROM users WHERE user_ID = ?", (user_ID, )).fetchone()[0]
+
+    if user_role == 'student':
         mainApp = QApplication(sys.argv)
-        application = StudentWindow(auth_app.user)
+        application = StudentWindow(user_ID)
         sys.exit(mainApp.exec_())
-    elif database[-1] == 'teacher':
+    elif user_role == 'teacher':
         mainApp = QApplication(sys.argv)
-        application = Teacher_Window(auth_app.user)
+        application = Teacher_Window(user_ID)
         sys.exit(mainApp.exec_())
 
 if __name__ == '__main__':

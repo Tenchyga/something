@@ -175,7 +175,7 @@ class Auth_Window():
 
         if (self.login.text(), ) in file_location.cursor().execute("SELECT login FROM users").fetchall():
             if (self.password.text(), ) in file_location.cursor().execute("SELECT password FROM users WHERE login = ?", (self.login.text(), )).fetchall():
-                self.user = self.login.text()
+                self.user = file_location.cursor().execute(f"SELECT user_ID FROM users WHERE login = ?", (self.login.text(), )).fetchone()
                 self.main_window.close()
         else:
             self.show_warning()

@@ -12,7 +12,7 @@ class Teacher_Window():
 
         # ----- ПОДКЛЮЧЕНИЕ БАЗЫ ДАННЫХ -----
         file_location = sqlite3.connect(os.getcwd() + '\database.db')
-        database = file_location.cursor().execute(f"SELECT * FROM teachers WHERE login = ?", (self.user, )).fetchone()
+        database = file_location.cursor()
 
 
         # Создание основого рабочего пространства
@@ -83,7 +83,7 @@ class Teacher_Window():
         self.manage.setGeometry(QRect(120, 120, 111, 41))
         self.manage.setFont(QFont('Corbel Light', 16))
 
-        username = database[1]
+        username = database.execute(f"SELECT lfp FROM users WHERE user_ID = ?", (self.user, )).fetchone()[0]
         self.label_welcome = QLabel(self.centralwidget)
         self.label_welcome.setGeometry(QRect(590, 30, 671, 81))
         self.label_welcome.setText(f"Добро пожаловать, {username}!")
@@ -207,9 +207,10 @@ class Teacher_Window():
             "background-color: rgb(231, 63, 17);"
         )
 
-        lessons = database[-1].split("\n")
-        for element in lessons:
-            self.comboBox.addItem(element)
+        lessons = database.execute(f"SELECT lessons FROM users WHERE user_ID = ?", (self.user, )).fetchone()
+        for id in lessons[0].split("-"):
+            lessons_name = database.execute(f"SELECT lesson_name FROM lessons WHERE lesson_ID = ?", (id, )).fetchone()[0]
+            self.comboBox.addItem(lessons_name)
 
 
         # Добавление полосок
