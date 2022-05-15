@@ -1,5 +1,6 @@
-from PyQt5.QtWidgets import QWidget, QPushButton, QLabel, QMainWindow, QLineEdit, QMessageBox, QFrame
-from PyQt5.QtGui import QFont
+
+from PyQt5.QtWidgets import QWidget, QPushButton, QLabel, QMainWindow, QLineEdit, QFrame
+from PyQt5.QtGui import QFont, QIcon
 from PyQt5.QtCore import Qt, QRect
 
 class Auth_Window():
@@ -10,6 +11,14 @@ class Auth_Window():
 
         # Создание основого рабочего пространства
         self.main_window = QMainWindow()
+
+        for _ in range(1):
+            import ctypes
+
+            myappid = 'mycompany.myproduct.subproduct.version'
+            ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
+        
+        self.main_window.setWindowIcon(QIcon('eProverka_icon.png'))
 
         self.main_window.setWindowFlags(
             Qt.CustomizeWindowHint |
@@ -26,31 +35,6 @@ class Auth_Window():
         self.centralwidget = QWidget(self.main_window)
 
 
-        # Создание кнопок
-        self.exit_button = QPushButton(self.main_window)
-        self.exit_button.setText("Выход")
-        self.exit_button.setFont(QFont('Corbel Light', 20))
-        self.exit_button.setStyleSheet("background-color: #E73F11; color: white")
-
-        self.exit_button.setFixedSize(140, 30)
-        self.exit_button.move(180, 560)
-        self.exit_button.show()
-
-        self.exit_button.clicked.connect(exit)
-
-
-        self.sign_in_button = QPushButton(self.main_window)
-        self.sign_in_button.setText("Вход")
-        self.sign_in_button.setFont(QFont('Corbel Light', 20))
-        self.sign_in_button.setStyleSheet("background-color: #E73F11; color: white")
-
-        self.sign_in_button.setFixedSize(140, 30)
-        self.sign_in_button.move(180, 310)
-        self.sign_in_button.show()
-
-        self.sign_in_button.clicked.connect(self.login_into_account)
-
-
         # Добавление надписи "еПроверка"
         self.title = QLabel(self.main_window)
 
@@ -62,6 +46,25 @@ class Auth_Window():
         self.title.setStyleSheet("color: #E73F11")
         self.title.show()
 
+
+        # Добавление надписи о некорректности ввода
+        self.warning_lavel = QLabel(self.main_window)
+
+        self.warning_lavel.setText("Неправильно указаны данные для входа.")
+        self.warning_lavel.setFixedSize(500, 50)
+        self.warning_lavel.move(25, 400)
+
+        self.warning_lavel.setFont(QFont('Corbel Light', 20))
+        self.warning_lavel.setStyleSheet("color: white; background-color: rgba(255, 255, 255, 0);")
+
+        self.warning_lavel_2 = QLabel(self.main_window)
+
+        self.warning_lavel_2.setText("Проверьте ввод и попробуйте снова.")
+        self.warning_lavel_2.setFixedSize(500, 50)
+        self.warning_lavel_2.move(35, 450)
+
+        self.warning_lavel_2.setFont(QFont('Corbel Light', 20))
+        self.warning_lavel_2.setStyleSheet("color: white; background-color: rgba(255, 255, 255, 0);")
 
         # Создание линий по краям "Аккаунт"
         self.line = QFrame(self.centralwidget)
@@ -90,6 +93,15 @@ class Auth_Window():
         self.label_2 = QLabel(self.centralwidget)
         self.label_2.setGeometry(QRect(190, 120, 121, 51))
 
+        self.line_warning = QFrame(self.centralwidget)
+        self.line_warning.setGeometry(QRect(0, 320, 635, 260))
+        self.line_warning.setStyleSheet("color: #E73F11")
+        self.line_warning.setFrameShadow(QFrame.Plain)
+        self.line_warning.setLineWidth(200)
+        self.line_warning.setMidLineWidth(0)
+        self.line_warning.setFrameShape(QFrame.HLine)
+        self.line_warning.hide()
+
 
         # Добавление полосок
         self.main_window.setCentralWidget(self.centralwidget)
@@ -113,21 +125,60 @@ class Auth_Window():
         self.password.setFont(QFont('Corbel Light', 14))
         self.password.show()
 
+
+        # Создание кнопок
+        self.exit_button = QPushButton(self.main_window)
+        self.exit_button.setText("Выход")
+        self.exit_button.setFont(QFont('Corbel Light', 20))
+        self.exit_button.setStyleSheet("background-color: #E73F11; color: white")
+
+        self.exit_button.setFixedSize(140, 30)
+        self.exit_button.move(180, 560)
+        self.exit_button.show()
+
+        self.exit_button.clicked.connect(exit)
+
+
+        self.sign_in_button = QPushButton(self.main_window)
+        self.sign_in_button.setText("Вход")
+        self.sign_in_button.setFont(QFont('Corbel Light', 20))
+        self.sign_in_button.setStyleSheet("background-color: #E73F11; color: white")
+
+        self.sign_in_button.setFixedSize(140, 30)
+        self.sign_in_button.move(180, 310)
+        self.sign_in_button.show()
+
+        self.sign_in_button.clicked.connect(self.login_into_account)
+
+
+        self.minimize_button = QPushButton(self.main_window)
+        self.minimize_button.setText("-")
+        self.minimize_button.setFont(QFont('Corbel', 20))
+        self.minimize_button.setStyleSheet("background-color: #E73F11; color: white")
+
+        self.minimize_button.setFixedSize(51, 31)
+        self.minimize_button.move(410, 10)
+        self.minimize_button.show()
+
+        self.minimize_button.clicked.connect(self.minimize_window)
+
+
+    def show_warning(self):
+        self.line_warning.show()
+        self.warning_lavel.show()
+        self.warning_lavel_2.show()
+
     def login_into_account(self):
         import sqlite3, os
 
-        is_exists = False
-
         file_location = sqlite3.connect(os.getcwd() + '\database.db')
-        database = file_location.cursor()
 
-        for login, password in database.execute("SELECT login, password FROM users"):
-            if self.login.text() == login and self.password.text() == password:
-                print("Такая запись существует.")
-                is_exists = True
-
-                self.user = login
+        if (self.login.text(), ) in file_location.cursor().execute("SELECT login FROM users").fetchall():
+            if (self.password.text(), ) in file_location.cursor().execute("SELECT password FROM users WHERE login = ?", (self.login.text(), )).fetchall():
+                self.user = self.login.text()
                 self.main_window.close()
+        else:
+            self.show_warning()
 
-        if not(is_exists):
-            print("Указанной записи не существует.")
+    def minimize_window(self):
+        self.main_window.showMinimized()

@@ -1,5 +1,5 @@
-from PyQt5.QtWidgets import QWidget, QPushButton, QLabel, QMainWindow, QComboBox, QMessageBox, QFrame
-from PyQt5.QtGui import QFont
+from PyQt5.QtWidgets import QWidget, QPushButton, QLabel, QMainWindow, QComboBox, QFrame
+from PyQt5.QtGui import QFont, QIcon
 from PyQt5.QtCore import Qt, QRect
 
 import sqlite3, os
@@ -16,6 +16,14 @@ class StudentWindow():
 
     # ----- Создание основого рабочего пространства -----
         self.main_window = QMainWindow()
+
+        for _ in range(1):
+            import ctypes
+
+            myappid = 'mycompany.myproduct.subproduct.version'
+            ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
+
+        self.main_window.setWindowIcon(QIcon('eProverka_icon.png'))
 
         self.main_window.setWindowFlags(
             Qt.CustomizeWindowHint |
@@ -91,6 +99,16 @@ class StudentWindow():
             "color: black; background-color: white;"
         )
 
+        self.minimize_button = QPushButton(self.main_window)
+        self.minimize_button.setText("-")
+        self.minimize_button.setFont(QFont('Corbel', 20))
+        self.minimize_button.setStyleSheet("background-color: #E73F11; color: white")
+
+        self.minimize_button.setFixedSize(51, 31)
+        self.minimize_button.move(1400, 10)
+        self.minimize_button.show()
+
+        self.minimize_button.clicked.connect(self.minimize_window)
 
     # ---- Добавление линий ----
         """ Линии, отделяющие кнопки предметов от основоой рабочей области """
@@ -275,3 +293,6 @@ class StudentWindow():
 
     # ---- Вывод всего на экран ----
         self.main_window.setCentralWidget(self.centralwidget)
+
+    def minimize_window(self):
+        self.main_window.showMinimized()
