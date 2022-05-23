@@ -27,6 +27,7 @@ class Auth_Window():
         )
 
         self.main_window.setStyleSheet("background-color: white;")
+        self.main_window.setWindowTitle("Авторизация")
         self.main_window.setFixedSize(502, 635)
         self.main_window.show()
 
@@ -172,11 +173,11 @@ class Auth_Window():
         import sqlite3, os
 
         file_location = sqlite3.connect(os.getcwd() + '\database.db')
+        database = file_location.cursor()
 
-        if (self.login.text(), ) in file_location.cursor().execute("SELECT login FROM users").fetchall():
-            if (self.password.text(), ) in file_location.cursor().execute("SELECT password FROM users WHERE login = ?", (self.login.text(), )).fetchall():
-                self.user = file_location.cursor().execute(f"SELECT user_ID FROM users WHERE login = ?", (self.login.text(), )).fetchone()
-                self.main_window.close()
+        if (self.login.text(), self.password.text()) in database.execute("SELECT login, password FROM users").fetchall():
+            self.user = database.execute(f"SELECT user_ID FROM users WHERE login = ?", (self.login.text(), )).fetchone()
+            self.main_window.close()
         else:
             self.show_warning()
 

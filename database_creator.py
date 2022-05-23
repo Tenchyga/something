@@ -31,7 +31,7 @@ def create_dabase():
     passwords = "112233,234561,113141,22545,141516,213456,654321,1111111".split(",")
 
     roles = ["student", "teacher"]
-    group_IDS = [21171, 21062, 21171]
+    group_IDS = [21171, 21062, 2116]
 
     if database.execute("SELECT * FROM users").fetchone() is None:
         for i in range(50):
@@ -46,15 +46,15 @@ def create_dabase():
                 role = roles[0]
 
             # ГЕнерация разных данных для заполнения БД.
-            login = alphabet[randint(0, len(alphabet)-1)] + last_names[randint(0, len(last_names) - 1)] + "KI21"
+            login = alphabet[randint(0, len(alphabet)-1)] + last_names[randint(0, len(last_names) - 1)] + "-KI21"
             password = passwords[randint(0, len(passwords) - 1)]
 
-            lfps = "Коновалов,Белько,Степанов,Бокаленко,Винокуров,Ершов,Болотников,Петров".split(",")[randint(0, 7)]
-            name = lfps + " " + "Данил,Илья,Артем,Олег,Степан".split(",")[randint(0, 4)]
+            lfps = "Коновалов,Степанов,Бокаленко,Винокуров,Ершов,Болотников,Петров".split(",")[randint(0, 6)]
+            name = lfps + " " + "Данил,Илья,Артем,Олег,Степан".split(",")[randint(0, 4)] + " Михалыч"
 
             if role == "teacher":
                 group = None
-                lessons = ["0-1", "0", "2", "0-2"][randint(0,3)]
+                lessons = ["0-1", "0", "2", "0-2", "1"][randint(0,4)]
             else:
                 group = group_IDS[randint(0, 2)]
                 lessons = None
@@ -131,11 +131,26 @@ def create_dabase():
                 "Анализировать пример СТО и найти ошибки.",
                 "Нунжно создать алгоритм строго вашего варианта.",
                 "Создать программу для вычисления заданной числовой прогрессии."]
-    works_lessons_key = [0, 0, 1, 1]
+    works_lessons_key = [1, 1, 0, 0]
 
     if database.execute("SELECT * FROM tasks").fetchone() is None:
         for i in range(4):
             database.execute("INSERT INTO tasks VALUES (?, ?, ?, ?)",
                             (i, work_names[i], works_disc[i], works_lessons_key[i]))
+
+    # - - - - СОЗДАНИЕ ТАБЛИЦЫ ДЛЯ СВЯЗИ ПРЕДМЕТОВ И ГРУПП - - - -
+
+    database.execute("""CREATE TABLE IF NOT EXISTS group_lessons(
+        group_ID INT,
+        lesson_ID INT
+    )""")
+
+    if database.execute("SELECT * FROM group_lessons").fetchone() is None:
+        for group_ID in group_IDS:
+            lessons = ["0-1", "0", "2", "0-2", "1"][randint(0,4)]
+
+            for lesson in lessons.split("-"):
+                database.execute("INSERT INTO group_lessons VALUES (?, ?)",
+                                (group_ID, int(lesson)))
 
     file_location.commit()

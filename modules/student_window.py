@@ -12,7 +12,15 @@ class StudentWindow():
 
     # ----- ПОДКЛЮЧЕНИЕ БАЗЫ ДАННЫХ -----
         file_location = sqlite3.connect(os.getcwd() + '\database.db')
-        database = file_location.cursor().execute(f"SELECT * FROM users WHERE login = ?", (self.user, )).fetchone()
+        database = file_location.cursor()
+
+    # - - - СБОР ДАННЫХ - - - |
+
+        group_ID = database.execute(f"SELECT group_ID FROM users WHERE user_ID = ?", (self.user, )).fetchone()[0]
+        student_group = database.execute(f"SELECT group_name FROM groups WHERE group_ID = ?", (group_ID, )).fetchone()[0]
+
+        lessons = database.execute("SELECT lessons_IDS from group_lessons WHERE group_ID = ?", (group_ID, )).fetchone()[0]
+    # - - - - - - - - - - - - |
 
     # ----- Создание основого рабочего пространства -----
         self.main_window = QMainWindow()
@@ -32,6 +40,7 @@ class StudentWindow():
         )
 
         self.main_window.setStyleSheet("background-color: white;")
+        self.main_window.setWindowTitle("еПроверка")
         self.main_window.setFixedSize(1466, 870)
         self.main_window.show()
 
@@ -98,6 +107,44 @@ class StudentWindow():
         self.button_task_5.setStyleSheet(
             "color: black; background-color: white;"
         )
+
+    # - - - - - - ВЫКЛЮЧЕНИЕ КНОПОК
+
+        self.button_task_1.hide()
+        self.button_task_2.hide()
+        self.button_task_3.hide()
+        self.button_task_4.hide()
+        self.button_task_5.hide()
+
+        for current_button in range(len(lessons.split("-"))):
+
+            if current_button == 0:
+                self.button_task_1.setText(database.execute("SELECT lesson_name FROM lessons WHERE lesson_ID = ?", 
+                                            (lessons.split("-")[current_button], )).fetchone()[0])
+                self.button_task_1.show()
+
+            elif current_button == 1:
+                self.button_task_2.setText(database.execute("SELECT lesson_name FROM lessons WHERE lesson_ID = ?", 
+                                            (lessons.split("-")[current_button], )).fetchone()[0])
+                self.button_task_2.show()
+
+            elif current_button == 2:
+                self.button_task_3.setText(database.execute("SELECT lesson_name FROM lessons WHERE lesson_ID = ?", 
+                                            (lessons.split("-")[current_button], )).fetchone()[0])
+                self.button_task_3.show()
+
+            elif current_button == 3:
+                self.button_task_4.setText(database.execute("SELECT lesson_name FROM lessons WHERE lesson_ID = ?", 
+                                            (lessons.split("-")[current_button], )).fetchone()[0])
+                self.button_task_4.show()
+
+            elif current_button == 4:
+                self.button_task_5.setText(database.execute("SELECT lesson_name FROM lessons WHERE lesson_ID = ?", 
+                                            (lessons.split("-")[current_button], )).fetchone()[0])
+                self.button_task_5.show()
+
+
+    # - - - - - - - - - - - -- - - -
 
         self.minimize_button = QPushButton(self.main_window)
         self.minimize_button.setText("-")
@@ -173,7 +220,7 @@ class StudentWindow():
 
         """ Добавление надписи 'Добро пожаловать, {name}' """
 
-        username = database[2]
+        username = database.execute(f"SELECT lfp FROM users WHERE user_ID = ?", (self.user, )).fetchone()[0]
         self.label_welcome = QLabel(self.centralwidget)
         self.label_welcome.setGeometry(QRect(590, 30, 671, 81))
         self.label_welcome.setText(f"Добро пожаловать, {username}!")
@@ -211,8 +258,6 @@ class StudentWindow():
 
         """ Добавление надписи 'Группа:' """
 
-        student_group = database[3]
-
         self.label_group = QLabel(self.centralwidget)
         self.label_group.setText(f"Группа: {student_group}")
         self.label_group.setGeometry(QRect(750, 240, 351, 31))
@@ -238,11 +283,30 @@ class StudentWindow():
 
 
         """ Добавление имени преподавателя на выбранный предмет """
-        teacher_name = 'Воронов В. С.'
+        teacher_names = list()
+        teacher_name = str()
+
+        for element in lessons.split("-"):
+            temp_full_name = database.execute("SELECT lfp FROM users WHERE user_ID = ?", 
+                (database.execute("SELECT user_ID FROM teacher_lessons WHERE lesson_ID = ?", (element, )).fetchone()[0], )).fetchone()[0]
+
+            temp_name = str()
+
+            temp_lfp = temp_full_name.split(" ")
+
+            temp_name = temp_lfp[0] + " " + temp_lfp[1][0] + ". " + temp_lfp[2][0] + ". "
+
+            teacher_names.append(temp_name)
+
+        for name in teacher_names:
+            teacher_name += name
+
+            if (teacher_names.index(name) != len(teacher_names) - 1):
+                teacher_name += ", "
 
         self.label_teacher = QLabel(self.centralwidget)
-        self.label_teacher.setText(f'Преподаватель: {teacher_name}')
-        self.label_teacher.setGeometry(QRect(410, 350, 391, 41))
+        self.label_teacher.setText(f'Преподаватели: {teacher_name}')
+        self.label_teacher.setGeometry(QRect(410, 350, 1400, 41))
         self.label_teacher.setFont(QFont('Corbel Light', 22))
         self.label_teacher.setAlignment(Qt.AlignLeading|Qt.AlignLeft|Qt.AlignVCenter)
 
@@ -277,6 +341,7 @@ class StudentWindow():
 
     # ---- Добавление выпадающего меню -----
         """ Добавление меню для выбора предметной статистики """
+
         self.comboBox_work = QComboBox(self.centralwidget)
         self.comboBox_work.setGeometry(QRect(800, 320, 231, 21))
         self.comboBox_work.setStyleSheet(
@@ -287,9 +352,9 @@ class StudentWindow():
             "color: white;"
         )
 
-        self.comboBox_work.addItem("Тестовое название 1")
-        self.comboBox_work.addItem("Тестовое название 2")
-        self.comboBox_work.addItem("Тестовое название 3")
+        for element in lessons.split("-"):
+            lesson_name = database.execute("SELECT lesson_name FROM lessons WHERE lesson_ID = ?", (element, )).fetchone()[0]
+            self.comboBox_work.addItem(lesson_name)
 
     # ---- Вывод всего на экран ----
         self.main_window.setCentralWidget(self.centralwidget)
