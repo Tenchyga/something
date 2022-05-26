@@ -6,6 +6,7 @@ Made by DK - aka- Tenchyga
 """
 
 from random import randint
+from tkinter.messagebox import NO
 
 
 def create_dabase():
@@ -152,5 +153,29 @@ def create_dabase():
             for lesson in lessons.split("-"):
                 database.execute("INSERT INTO group_lessons VALUES (?, ?)",
                                 (group_ID, int(lesson)))
+
+    database.execute(
+        """CREATE TABLE IF NOT EXISTS student_tasks (
+            task_ID INT,
+            student_ID INT,
+            file BLOB,
+            comment TEXT,
+            grade INT
+        )""")
+
+    if database.execute("SELECT * FROM student_tasks").fetchone() is None:
+        for student_ID, group_ID in database.execute("SELECT user_ID, group_ID FROM users WHERE role = ?", ("student", )).fetchall():
+
+            lessons = list()
+            for lesson in database.execute("SELECT lesson_ID FROM group_lessons WHERE group_ID = ?", (group_ID, )).fetchall():
+                lessons.append(lesson[0])
+
+            for lesson in lessons:
+
+                for work_ID in database.execute("SELECT work_ID FROM tasks WHERE lessons_key = ?", (lesson, )).fetchall():
+                    database.execute(
+                        "INSERT INTO student_tasks VALUES (?, ?, ?, ?, ?)", 
+                        (work_ID[0], student_ID, None, None, None)
+                    )
 
     file_location.commit()
