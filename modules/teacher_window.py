@@ -923,7 +923,7 @@ class Teacher_Window():
         if (self.input_grade.toPlainText()).isnumeric():
             if 0 <= int(self.input_grade.toPlainText()) <= 100:
 
-                if self.input_comment.toPlainText().isalpha():
+                if len(self.input_comment.toPlainText().strip()) > 0:
                     comment = self.input_comment.toPlainText()
                 else:
                     comment = None
@@ -960,19 +960,22 @@ class Teacher_Window():
         file_location = sqlite3.connect(os.getcwd() + '\database.db')
         database = file_location.cursor()
 
-        with open(result[0], 'wb') as file:
-            file.write(
-                database.execute(
-                        "SELECT file FROM student_tasks WHERE task_ID = ? AND student_ID = ?", 
-                        (
-                            database.execute(
-                                "SELECT work_ID FROM tasks WHERE work_name = ?", (self.comboBox_task_grade.currentText(), )
-                            ).fetchone()[0], 
-                            database.execute(
-                                "SELECT user_ID FROM users WHERE lfp = ?", (self.comboBox_student_grade.currentText(), )
-                            ).fetchone()[0])
-                    ).fetchone()[0]
-            )
+        if result[0] == '':
+            pass
+        else:
+            with open(result[0], 'wb') as file:
+                file.write(
+                    database.execute(
+                            "SELECT file FROM student_tasks WHERE task_ID = ? AND student_ID = ?", 
+                            (
+                                database.execute(
+                                    "SELECT work_ID FROM tasks WHERE work_name = ?", (self.comboBox_task_grade.currentText(), )
+                                ).fetchone()[0], 
+                                database.execute(
+                                    "SELECT user_ID FROM users WHERE lfp = ?", (self.comboBox_student_grade.currentText(), )
+                                ).fetchone()[0])
+                        ).fetchone()[0]
+                )
 
     def student_code_change(self):
 
@@ -1089,21 +1092,6 @@ class Teacher_Window():
                         if grade is not None:
                             if grade[0] is not None:
                                 all_checked_works += 1
-            # for (grade, student_ID) in database.execute(
-            #     "SELECT grade, student_ID FROM student_tasks WHERE task_ID = ?", task
-            # ):
-            #     if (ID, ) in database.execute(
-            #         "SELECT work_ID FROM tasks WHERE lessons_key = ?",
-            #             database.execute(
-            #                 "SELECT lesson_ID FROM lessons WHERE lesson_name = ?", (self.lesson.currentText(), )
-            #             ).fetchone()
-            #     ).fetchall() and (student, ) in database.execute(
-            #         "SELECT user_ID FROM students_groups WHERE group_ID = ?", group
-            #     ).fetchall():
-            #         all_works += 1
-
-            #         if grade is not None:
-            #             all_checked_works += 1
 
         self.label_all_works_checked.setText(f"Всего работ зачтено: {all_checked_works}")
         self.label_all_works.setText(f"Всего загруженных работ: {all_works}")
